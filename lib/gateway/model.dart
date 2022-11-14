@@ -1,4 +1,4 @@
-import 'package:by_dart_server/utils/rsa.dart';
+import 'package:by_server/utils/rsa.dart';
 import 'dart:convert';
 
 class Authentication {

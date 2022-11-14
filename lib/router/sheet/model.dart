@@ -1,5 +1,5 @@
-import 'package:by_dart_server/utils/lodash.dart';
-import 'package:by_dart_server/utils/md5.dart';
+import 'package:by_server/utils/lodash.dart';
+import 'package:by_server/utils/md5.dart';
 import 'final.dart';
 
 class ConfigColumn {

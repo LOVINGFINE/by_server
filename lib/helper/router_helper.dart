@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:by_dart_server/router/user/model.dart';
+import 'package:by_server/router/user/model.dart';
 
 class BodyResult {
   /// The parsed json.

@@ -1,4 +1,4 @@
-import 'package:by_dart_server/utils/lodash.dart';
+import 'package:by_server/utils/lodash.dart';
 
 enum MessageType { text, file, video, voice, link }
 

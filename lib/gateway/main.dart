@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:by_dart_server/gateway/model.dart';
-import 'package:by_dart_server/socket/main.dart';
+import 'package:by_server/gateway/model.dart';
+import 'package:by_server/socket/main.dart';
 import 'package:shelf/shelf.dart';
-import 'package:by_dart_server/router/user/model.dart';
-import 'package:by_dart_server/router/user/main.dart';
+import 'package:by_server/router/user/model.dart';
+import 'package:by_server/router/user/main.dart';
 
 class Gateway {
   static List<String> whitelist = ['user'];

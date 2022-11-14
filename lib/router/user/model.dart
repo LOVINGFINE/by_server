@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:by_dart_server/utils/md5.dart';
-import 'package:by_dart_server/utils/lodash.dart';
+import 'package:by_server/utils/md5.dart';
+import 'package:by_server/utils/lodash.dart';
 
 enum TodoType { mobile, email, username }
 

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:by_dart_server/helper/socket_helper.dart';
+import 'package:by_server/helper/socket_helper.dart';
 import 'package:shelf/shelf.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import './model.dart';

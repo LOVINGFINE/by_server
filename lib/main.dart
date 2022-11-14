@@ -3,9 +3,9 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_cors_headers/shelf_cors_headers.dart';
 import 'package:mongo_dart/mongo_dart.dart' hide State;
-import 'package:by_dart_server/router/main.dart';
-import 'package:by_dart_server/gateway/main.dart';
-import 'package:by_dart_server/utils/easy_date.dart';
+import 'package:by_server/router/main.dart';
+import 'package:by_server/gateway/main.dart';
+import 'package:by_server/utils/easy_date.dart';
 
 /// app 配置
 InternetAddress iPv4 = InternetAddress.loopbackIPv4; // 配置
