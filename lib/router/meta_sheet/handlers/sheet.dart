@@ -8,7 +8,7 @@ import '../model.dart';
 
 class MetaSheetRouter extends RouterHelper {
   String? sheetId;
-  DbCollection metaSheetDb = mongodb.collection('META_SHEETS');
+  DbCollection metaSheetDb = mongodb.collection('meta_sheets');
   MetaSheetRouter(Request request, {this.sheetId})
       : super(
           request,

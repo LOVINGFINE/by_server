@@ -3,7 +3,7 @@ import 'package:mongo_dart/mongo_dart.dart' hide State;
 import 'package:by_server/utils/lodash.dart';
 import 'package:shelf/shelf.dart';
 import 'package:by_server/helper/router_helper.dart';
-import '../model.dart';
+import '../models/main.dart';
 
 enum WorkbookCommand {
   none,
@@ -36,12 +36,12 @@ class SheetWorkbookCommandRouter extends RouterHelper {
   Sheet sheet = Sheet();
   Workbook workbook = Workbook();
   WorkbookCommand command = WorkbookCommand.none;
-  DbCollection sheetDb = mongodb.collection('SHEETS');
-  DbCollection sheetWorkbookDb = mongodb.collection('SHEETS_WORKBOOKS');
+  DbCollection sheetDb = mongodb.collection('sheets');
+  DbCollection sheetWorkbookDb = mongodb.collection('sheet_workbooks');
   SheetWorkbookCommandRouter(
       Request request, this.sheetId, this.workbookId, String action)
       : super(request) {
-    sheetWorkbookDb = mongodb.collection('SHEETS_WORKBOOKS_$sheetId');
+    sheetWorkbookDb = mongodb.collection('sheet_workbooks_$sheetId');
     WorkbookCommand? t = command.stringToType(action);
     if (t != null) {
       command = t;

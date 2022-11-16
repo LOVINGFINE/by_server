@@ -13,15 +13,11 @@ class Md5EnCode {
 
   // 生成 key 32位 md5
   String get to32Bit {
-    return hex.encode(digest.bytes).toUpperCase().replaceAll('0', '-');
+    return hex.encode(digest.bytes).toUpperCase();
   }
 
   // 生成 key 16位 md5
   String get to16Bit {
-    return hex
-        .encode(digest.bytes)
-        .toUpperCase()
-        .replaceAll('0', '')
-        .substring(8, 24);
+    return hex.encode(digest.bytes).toUpperCase().substring(8, 24);
   }
 }

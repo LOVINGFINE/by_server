@@ -47,7 +47,7 @@ class UserRegisterRouter extends RouterHelper {
         String password = body.json['password'] ?? '12345678';
         User user = User(
             password: Md5EnCode(password).to32Bit,
-            username: 'LF_${DateTime.now()}',
+            username: 'LF-${Md5EnCode(DateTime.now()).to16Bit}',
             email: email);
         var status = await userDb.insertOne(user.toJson());
         if (status.isFailure) {

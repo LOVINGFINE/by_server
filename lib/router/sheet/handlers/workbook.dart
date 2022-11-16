@@ -2,19 +2,19 @@ import 'package:by_server/main.dart';
 import 'package:mongo_dart/mongo_dart.dart' hide State;
 import 'package:shelf/shelf.dart';
 import 'package:by_server/helper/router_helper.dart';
-import '../model.dart';
+import '../models/main.dart';
 
 class SheetWorkbookRouter extends RouterHelper {
   String sheetId;
   String workbookId;
   Sheet sheet = Sheet();
   Workbook workbook = Workbook();
-  DbCollection sheetDb = mongodb.collection('SHEETS');
-  DbCollection sheetWorkbookDb = mongodb.collection('SHEETS_WORKBOOKS');
+  DbCollection sheetDb = mongodb.collection('sheets');
+  DbCollection sheetWorkbookDb = mongodb.collection('sheet_workbooks');
 
   SheetWorkbookRouter(Request request, this.sheetId, {this.workbookId = ''})
       : super(request) {
-    sheetWorkbookDb = mongodb.collection('SHEETS_WORKBOOKS_$sheetId');
+    sheetWorkbookDb = mongodb.collection('sheet_workbooks_$sheetId');
   }
 
   @override

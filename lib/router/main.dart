@@ -37,6 +37,13 @@ class HttpRouter {
       return SheetTemplateRouter(request, templateId: templateId).handler();
     });
 
+    /// sheet 用户设置
+    appRouter.all('/sheet/user/settings', (
+      Request request,
+    ) {
+      return SheetUserSettingsRouter(request).handler();
+    });
+
     /// 表格
     appRouter.all('/sheets', (
       Request request,

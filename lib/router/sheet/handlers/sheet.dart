@@ -1,18 +1,17 @@
-import 'package:by_server/utils/lodash.dart';
 import 'package:by_server/main.dart';
 import 'package:mongo_dart/mongo_dart.dart' hide State;
 import 'package:shelf/shelf.dart';
 import 'package:by_server/helper/router_helper.dart';
-import '../model.dart';
+import '../models/main.dart';
 
 class SheetRouter extends RouterUserHelper {
   Sheet? sheet;
   String? sheetId;
-  DbCollection sheetDb = mongodb.collection('SHEETS');
-  DbCollection sheetWorkbookDb = mongodb.collection('SHEETS_WORKBOOKS');
+  DbCollection sheetDb = mongodb.collection('sheets');
+  DbCollection sheetWorkbookDb = mongodb.collection('sheet_workbooks');
   SheetRouter(Request request, {this.sheetId}) : super(request) {
     if (sheetId != null) {
-      sheetWorkbookDb = mongodb.collection('SHEETS_WORKBOOKS_$sheetId');
+      sheetWorkbookDb = mongodb.collection('sheet_workbooks_$sheetId');
     }
   }
 
@@ -22,7 +21,7 @@ class SheetRouter extends RouterUserHelper {
     if (!status.isFailure) {
       // 创建 工作表
       DbCollection newSheetWorkbookDb =
-          mongodb.collection('SHEETS_WORKBOOKS_${sheet.id}');
+          mongodb.collection('sheet_workbooks_${sheet.id}');
       Workbook wb = Workbook(name: 'Sheet1');
       await newSheetWorkbookDb.insertOne(wb.toJson);
       return sheet;
@@ -133,7 +132,7 @@ class SheetRouter extends RouterUserHelper {
       return response(500, message: '删除失败');
     }
     DbCollection sheetWorkbookDb =
-        mongodb.collection('SHEETS_WORKBOOKS$sheetId');
+        mongodb.collection('sheet_workbooks_$sheetId');
     await sheetWorkbookDb.drop();
     return response(200, message: 'ok');
   }

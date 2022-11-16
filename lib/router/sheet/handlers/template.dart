@@ -3,7 +3,7 @@ import 'package:by_server/utils/lodash.dart';
 import 'package:mongo_dart/mongo_dart.dart' hide State;
 import 'package:shelf/shelf.dart';
 import 'package:by_server/helper/router_helper.dart';
-import '../model.dart';
+import '../models/main.dart';
 
 class SheetTemplateRouter extends RouterUserHelper {
   String? templateId;
@@ -31,15 +31,15 @@ class SheetTemplateRouter extends RouterUserHelper {
       }
       return response(400, message: 'template [$templateId] not found');
     }
-    var categories =
+    var categoryData =
         await categoryDb.find(where.excludeFields(['_id'])).toList();
     SelectorBuilder selector =
-        where.match('name', query['search'] ?? '').excludeFields(['_id']);
-    var list = await templateDb.find(selector).toList();
-
-    List<Map<String, dynamic>> data = ListUtil.map(categories, (ele, i) {
-      var records = ListUtil.filter(list, (item, i) {
-        return item['categoryId'] == ele['id'];
+        where.match('title', query['search'] ?? '').excludeFields(['_id']);
+    var templateData = await templateDb.find(selector).toList();
+    var hot = ListUtil.filter(templateData, (e, i) => i < 4);
+    List<Map<String, dynamic>> data = ListUtil.map(categoryData, (ele, i) {
+      var records = ListUtil.filter(templateData, (item, i) {
+        return item['categoryId'] == ele['id'] && i > 3;
       });
       return {
         'id': ele['id'],
@@ -48,10 +48,10 @@ class SheetTemplateRouter extends RouterUserHelper {
         'records': records
       };
     });
-    return response(200,
-        data: ListUtil.filter(data, (item, i) {
-          return item['records'].length > 0;
-        }));
+    var categories = ListUtil.filter(data, (item, i) {
+      return item['records'].length > 0;
+    });
+    return response(200, data: {'categories': categories, 'hot': hot});
   }
 
   @override
@@ -65,7 +65,7 @@ class SheetTemplateRouter extends RouterUserHelper {
       if (cat == null) {
         return response(400, message: 'category [$categoryId] not found');
       }
-      String title = body.json['title'] ?? '';
+      String title = body.json['title'] ?? '未命名模版';
       String description = body.json['description'] ?? '';
       var template =
           SheetTemplate(categoryId, title: title, description: description);

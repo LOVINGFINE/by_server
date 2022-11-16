@@ -64,6 +64,6 @@ class User {
         mobile = json['mobile'];
 
   static getNewId() {
-    return 'LF_${Md5EnCode('user-${DateTime.now()}').to32Bit}';
+    return 'LF-${Md5EnCode('user-${DateTime.now()}').to32Bit}';
   }
 }

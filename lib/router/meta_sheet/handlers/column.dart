@@ -6,7 +6,7 @@ import '../model.dart';
 
 class SheetColumnRouter extends RouterHelper {
   String sheetId;
-  DbCollection metaSheetDb = mongodb.collection('META_SHEETS');
+  DbCollection metaSheetDb = mongodb.collection('meta_sheets');
   SheetColumnRouter(Request request, this.sheetId) : super(request);
 
   getSheet() async {
