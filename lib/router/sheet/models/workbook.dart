@@ -97,7 +97,7 @@ class Cell {
     'fontSize': 13,
     'lineHeight': 1,
     'background': "transparent",
-    'color': "#002329",
+    'color': "#424f58",
     'bold': false,
     'italic': false,
     'underline': false,

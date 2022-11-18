@@ -25,7 +25,11 @@ class AppServer {
 
   run() async {
     // server
-    await mongodb.open();
+    try {
+      await mongodb.open();
+    } catch (e) {
+      print(e.toString());
+    }
 
     var pipeline = const Pipeline()
         .addMiddleware(corsHeaders(headers: overrideHeaders))

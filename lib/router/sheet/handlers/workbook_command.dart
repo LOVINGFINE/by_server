@@ -87,7 +87,7 @@ class SheetWorkbookCommandRouter extends RouterHelper {
     var targetJson = MapUtil.map<String, Map<String, dynamic>>(
         workbook.columns, (e, i) => e.toJson);
     workbook.updatedTime = DateTime.now().toString();
-    var status = await sheetDb.updateOne(where.eq('id', workbookId), {
+    var status = await sheetWorkbookDb.updateOne(where.eq('id', workbookId), {
       '\$set': {'updatedTime': workbook.updatedTime, 'columns': targetJson}
     });
     if (status.isFailure) {

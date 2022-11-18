@@ -4,7 +4,7 @@ version: 1.0.0
 # homepage: https://www.example.com
 
 environment:
-  sdk: "2.18.1"
+  sdk: ">=2.18.1"
 
 dependencies:
   http_server: ^1.0.0
@@ -14,7 +14,7 @@ dependencies:
   shelf_router: ^1.1.2
   shelf_cors_headers: ^0.1.2
   shelf_web_socket: ^1.0.2
-  yaml: ^3.1.1
+  yaml: ^3.1.1 
 
 dev_dependencies:
   lints: ^1.0.0
