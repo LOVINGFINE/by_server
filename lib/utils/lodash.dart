@@ -80,3 +80,31 @@ class ListUtil {
     return index;
   }
 }
+
+class Pagination<T> {
+  List<T> records;
+  int total;
+  int page;
+  int pageSize;
+  Pagination(this.records, {this.total = 0, this.page = 1, this.pageSize = 0});
+
+  get toJson {
+    return {
+      'page': page,
+      'pageSize': pageSize,
+      'total': total,
+      'records': ListUtil.map(records, (e, i) => e.toJson)
+    };
+  }
+
+  Pagination.formJson(
+      Map json,
+      T Function(
+    dynamic e,
+  )
+          fn)
+      : page = json['page'],
+        pageSize = json['pageSize'],
+        total = json['total'],
+        records = ListUtil.map<T>(json['records'], (e, i) => fn(e));
+}
