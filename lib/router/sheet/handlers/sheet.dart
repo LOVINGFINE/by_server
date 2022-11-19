@@ -8,22 +8,27 @@ class SheetRouter extends RouterUserHelper {
   Sheet? sheet;
   String? sheetId;
   DbCollection sheetDb = mongodb.collection('sheets');
-  DbCollection sheetWorkbookDb = mongodb.collection('sheet_workbooks');
-  SheetRouter(Request request, {this.sheetId}) : super(request) {
-    if (sheetId != null) {
-      sheetWorkbookDb = mongodb.collection('sheet_workbooks_$sheetId');
-    }
-  }
+  SheetRouter(Request request, {this.sheetId}) : super(request);
 
-  Future<Sheet?> createSheet(String name) async {
-    Sheet sheet = Sheet(name: name, owner: user.id);
+  Future<Sheet?> createSheet(String name, {SheetType? type}) async {
+    Sheet sheet =
+        Sheet(name: name, owner: user.id, type: type ?? SheetType.common);
     var status = await sheetDb.insertOne(sheet.toJson);
     if (!status.isFailure) {
-      // 创建 工作表
-      DbCollection newSheetWorkbookDb =
-          mongodb.collection('sheet_workbooks_${sheet.id}');
-      Workbook wb = Workbook(name: 'Sheet1');
-      await newSheetWorkbookDb.insertOne(wb.toJson);
+      if (type == SheetType.meta) {
+        // meta
+        DbCollection metaWorkbookDb = mongodb.collection('meta_workbooks');
+        int count = await metaWorkbookDb.count();
+        MetaWorkbook wb = MetaWorkbook(
+            sheetId: sheet.id, code: MetaWorkbook.numberToCode(count));
+        await metaWorkbookDb.insertOne(wb.toJson);
+      } else {
+        // 创建 工作表
+        DbCollection newSheetWorkbookDb =
+            mongodb.collection('sheet_workbooks_${sheet.id}');
+        Workbook wb = Workbook(name: 'Sheet1');
+        await newSheetWorkbookDb.insertOne(wb.toJson);
+      }
       return sheet;
     }
     return Future(() => null);
@@ -94,7 +99,8 @@ class SheetRouter extends RouterUserHelper {
   @override
   Future<Response> post() async {
     String name = body.json['name'] ?? '未命名';
-    Sheet? sheet = await createSheet(name);
+    SheetType? type = SheetType.values[0].toType(body.json['type'] ?? '');
+    Sheet? sheet = await createSheet(name, type: type);
     if (sheet == null) {
       return response(500, message: '创建失败');
     }
@@ -131,9 +137,14 @@ class SheetRouter extends RouterUserHelper {
     if (status.isFailure) {
       return response(500, message: '删除失败');
     }
-    DbCollection sheetWorkbookDb =
-        mongodb.collection('sheet_workbooks_$sheetId');
-    await sheetWorkbookDb.drop();
+    if (sheet?.type == SheetType.meta) {
+      DbCollection metaWorkbookDb = mongodb.collection('meta_workbooks');
+      await metaWorkbookDb.deleteOne(where.eq('sheetId', sheetId));
+    } else {
+      DbCollection sheetWorkbookDb =
+          mongodb.collection('sheet_workbooks_$sheetId');
+      await sheetWorkbookDb.drop();
+    }
     return response(200, message: 'ok');
   }
 }

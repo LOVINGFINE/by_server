@@ -1,6 +1,6 @@
 export './handlers/sheet.dart';
-export './handlers/workbook.dart';
-export './handlers/workbook_command.dart';
+export './handlers/meta.dart';
+export './handlers/common.dart';
 export './handlers/template.dart';
 export './handlers/template_category.dart';
 export './handlers/user_settings.dart';

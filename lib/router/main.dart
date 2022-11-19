@@ -45,30 +45,20 @@ class HttpRouter {
     });
 
     /// 表格
-    appRouter.all('/sheets', (
-      Request request,
-    ) {
-      return SheetRouter(request).handler();
-    });
-
-    appRouter.all('/sheets/<sheetId>', (Request request, String sheetId) {
+    appRouter.all('/sheets/<?sheetId>', (Request request, String? sheetId) {
       return SheetRouter(request, sheetId: sheetId).handler();
     });
 
-    appRouter.all('/sheets/<sheetId>/workbooks',
-        (Request request, String sheetId) {
-      return SheetWorkbookRouter(request, sheetId).handler();
-    });
-
-    appRouter.all('/sheets/<sheetId>/workbooks/<workbookId>',
-        (Request request, String sheetId, String workbookId) {
-      return SheetWorkbookRouter(request, sheetId, workbookId: workbookId)
+    appRouter.all('/sheets/<sheetId>/meta/<?command>',
+        (Request request, String sheetId, String command) {
+      return SheetMetaWorkbookRouter(request, sheetId, command: command)
           .handler();
     });
 
-    appRouter.all('/sheets/<sheetId>/workbooks/<workbookId>/command/<command>',
+    appRouter.all('/sheets/<sheetId>/common/<?workbookId>/<?command>',
         (Request request, String sheetId, String workbookId, String command) {
-      return SheetWorkbookCommandRouter(request, sheetId, workbookId, command)
+      return SheetCommonWorkbookRouter(request, sheetId,
+              workbookId: workbookId, command: command)
           .handler();
     });
 

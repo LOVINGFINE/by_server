@@ -1,51 +1,23 @@
 import 'package:by_server/main.dart';
-import 'package:mongo_dart/mongo_dart.dart' hide State;
 import 'package:by_server/utils/lodash.dart';
+import 'package:mongo_dart/mongo_dart.dart' hide State;
 import 'package:shelf/shelf.dart';
 import 'package:by_server/helper/router_helper.dart';
 import '../models/main.dart';
 
-enum WorkbookCommand {
-  none,
-  column,
-  row,
-  data,
-}
-
-extension ParseMetaType on WorkbookCommand {
-  bool isTypeString(type) {
-    if (type == null) {
-      return false;
-    }
-    return toString().split('.').last == type;
-  }
-
-  String toTypeString() {
-    return toString().split('.').last;
-  }
-
-  WorkbookCommand? stringToType(String type) {
-    return ListUtil.find(
-        WorkbookCommand.values, (v, i) => v.toTypeString() == type);
-  }
-}
-
-class SheetWorkbookCommandRouter extends RouterHelper {
+class SheetCommonWorkbookRouter extends RouterHelper {
   String sheetId;
   String workbookId;
   Sheet sheet = Sheet();
   Workbook workbook = Workbook();
-  WorkbookCommand command = WorkbookCommand.none;
   DbCollection sheetDb = mongodb.collection('sheets');
-  DbCollection sheetWorkbookDb = mongodb.collection('sheet_workbooks');
-  SheetWorkbookCommandRouter(
-      Request request, this.sheetId, this.workbookId, String action)
-      : super(request) {
-    sheetWorkbookDb = mongodb.collection('sheet_workbooks_$sheetId');
-    WorkbookCommand? t = command.stringToType(action);
-    if (t != null) {
-      command = t;
-    }
+  String command;
+  SheetCommonWorkbookRouter(Request request, this.sheetId,
+      {this.workbookId = '', this.command = ''})
+      : super(request);
+
+  DbCollection get sheetWorkbookDb {
+    return mongodb.collection('sheet_workbooks_$sheetId');
   }
 
   @override
@@ -57,10 +29,13 @@ class SheetWorkbookCommandRouter extends RouterHelper {
     sheet = Sheet.fromJson(json);
     var jsonWb = await sheetWorkbookDb.findOne(where.eq('id', workbookId));
     if (jsonWb == null) {
-      return response(400,
-          message: 'sheet [${sheet.name}] workbook [$workbookId]  not found');
+      var method = request.method.toUpperCase();
+      if (method != 'GET' && method != 'POST') {
+        return response(400, message: 'workbook [$workbookId] not found');
+      }
+    } else {
+      workbook = Workbook.fromJson(jsonWb);
     }
-    workbook = Workbook.fromJson(jsonWb);
     return handle();
   }
 
@@ -71,6 +46,30 @@ class SheetWorkbookCommandRouter extends RouterHelper {
         'updatedTime': sheet.updatedTime,
       }
     });
+  }
+
+  @override
+  Future<Response> get() async {
+    if (workbookId == '') {
+      SelectorBuilder selector = where
+          .match('name', query['search'] ?? '')
+          .excludeFields(['_id', 'columns', 'rows', 'data']);
+      var workbooks = await sheetWorkbookDb.find(selector).toList();
+      return response(200, message: 'ok', data: workbooks);
+    }
+    return response(200, message: 'ok', data: workbook.toJson);
+  }
+
+  @override
+  Future<Response> post() async {
+    int count = await sheetWorkbookDb.count();
+    String name = body.json['name'] ?? 'Sheet${count + 1}';
+    Workbook target = Workbook(name: name);
+    var status = await sheetWorkbookDb.insertOne(target.toJson);
+    if (status.isFailure) {
+      return response(500, message: '创建 workbook 失败');
+    }
+    return response(200, message: 'ok', data: target.toJson);
   }
 
   Future<Response> patchConfigColumn() async {
@@ -148,17 +147,42 @@ class SheetWorkbookCommandRouter extends RouterHelper {
     return response(200, message: 'ok', data: targetJson);
   }
 
+  Future<Response> patchWorkbookAbout() async {
+    if (body.json['name'] != null) {
+      var status = await sheetWorkbookDb.updateOne(where.eq('id', workbookId), {
+        '\$set': {'updatedTime': sheet.updatedTime, 'name': body.json['name']}
+      });
+      if (status.isFailure) {
+        return response(500, message: '更新失败');
+      }
+      workbook.name = body.json['name'];
+      await updateSheet();
+      return response(200, message: 'ok', data: workbook.toJson);
+    }
+    return response(400, message: 'not params');
+  }
+
   @override
   Future<Response> patch() async {
     switch (command) {
-      case WorkbookCommand.column:
+      case 'column':
         return patchConfigColumn();
-      case WorkbookCommand.row:
+      case 'row':
         return patchConfigRow();
-      case WorkbookCommand.data:
+      case 'data':
         return patchDataSource();
       default:
-        return response(400, message: 'not found command');
+        return patchWorkbookAbout();
     }
+  }
+
+  @override
+  Future<Response> delete() async {
+    var status = await sheetWorkbookDb.deleteOne(where.eq('id', sheetId));
+    if (status.isFailure) {
+      return response(500, message: '删除失败');
+    }
+    await updateSheet();
+    return response(200, message: 'ok');
   }
 }

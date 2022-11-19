@@ -1,40 +1,29 @@
 import 'package:by_server/utils/lodash.dart';
 
-class MetaSheet {
-  String id;
+class MetaWorkbook {
+  String sheetId;
   String code;
-  String name;
-  String createdTime = DateTime.now().toString();
-  String updatedTime = DateTime.now().toString();
   List<MetaColumn> columns = [];
-  List<MetaSheetEntry> entries = [];
-  MetaSheet(
-    this.id, {
+  List<MetaEntry> entries = [];
+  MetaWorkbook({
+    this.sheetId = '',
     this.code = '',
-    this.name = '未命名',
   });
 
   Map<String, dynamic> get toJson {
     return {
-      'id': id,
+      'sheetId': sheetId,
       'code': code,
-      'name': name,
-      'createdTime': createdTime,
-      'updatedTime': updatedTime,
       'columns': columns.map((c) => c.toJson).toList(),
       'entries': entries.map((e) => e.toJson).toList()
     };
   }
 
-  MetaSheet.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
+  MetaWorkbook.fromJson(Map<String, dynamic> json)
+      : sheetId = json['sheetId'],
         code = json['code'],
-        name = json['name'],
-        createdTime = json['createdTime'],
-        updatedTime = json['updatedTime'],
         columns = json['columns'].map((v) => MetaColumn.fromJson(v)).toList(),
-        entries =
-            json['entries'].map((v) => MetaSheetEntry.fromJson(v)).toList();
+        entries = json['entries'].map((v) => MetaEntry.fromJson(v)).toList();
 
   static String numberToCode(int n) {
     String toCode(int n) {
@@ -205,16 +194,16 @@ class MetaColumn {
   }
 }
 
-class MetaSheetEntry {
+class MetaEntry {
   String id;
   Map<String, dynamic> values = {};
-  MetaSheetEntry({this.id = ''});
+  MetaEntry({this.id = ''});
 
   get toJson {
     return {'id': id, 'record': values};
   }
 
-  MetaSheetEntry.fromJson(Map<String, dynamic> json)
+  MetaEntry.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         values = json['values'];
 
