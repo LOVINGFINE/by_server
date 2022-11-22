@@ -1,4 +1,3 @@
-import 'package:by_server/router/user/main.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'sheet/main.dart';
@@ -6,13 +5,6 @@ import 'sheet/main.dart';
 class HttpRouter {
   static Handler get router {
     Router appRouter = Router();
-    appRouter.all('/register', (Request request) {
-      return UserRegisterRouter(request).handler();
-    });
-
-    appRouter.all('/login', (Request request) {
-      return UserRouter(request).handler();
-    });
 
     /// 模版分类
     appRouter.all('/sheet/template-categories', (Request request) {

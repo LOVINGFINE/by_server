@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:by_server/gateway/model.dart';
+import 'package:by_server/jwt/model.dart';
 import 'package:by_server/socket/main.dart';
 import 'package:shelf/shelf.dart';
 import 'package:by_server/router/user/model.dart';
 import 'package:by_server/router/user/main.dart';
 
-class Gateway {
-  static List<String> whitelist = ['user'];
+class JwtGateway {
+  static List<String> whitelist = [];
+  static String signInPath = 'sign-in';
+  static String signUpPath = 'sign-up';
+  static String exchangePath = 'token';
 
   static Future<Response> verify(Handler handler, Request request) async {
     String token = request.headers['Access-Token'] ?? '';
@@ -87,14 +90,15 @@ class Gateway {
         }
         var method = request.method.toUpperCase();
         // 登录 注册
-        if ((path == 'register') && method == 'POST') {
+        if ((path == signUpPath) && method == 'POST') {
           return await registerRouter(request);
         }
-        if ((path == 'login') && method == 'POST') {
+
+        if ((path == signInPath) && method == 'POST') {
           return await userRouter(request);
         }
 
-        if (path == 'token' && method == 'GET') {
+        if (path == exchangePath && method == 'GET') {
           // 换取用户信息
           return await accessToken(request);
         }
