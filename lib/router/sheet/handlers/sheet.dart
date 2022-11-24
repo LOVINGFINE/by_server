@@ -19,9 +19,9 @@ class SheetRouter extends RouterUserHelper {
         // meta
         DbCollection metaWorkbookDb = mongodb.collection('meta_workbooks');
         int count = await metaWorkbookDb.count();
-        MetaWorkbook wb = MetaWorkbook(
+        MetaWorkbook metaWb = MetaWorkbook(
             sheetId: sheet.id, code: MetaWorkbook.numberToCode(count));
-        await metaWorkbookDb.insertOne(wb.toJson);
+        await metaWorkbookDb.insertOne(metaWb.toJson);
       } else {
         // 创建 工作表
         DbCollection newSheetWorkbookDb =

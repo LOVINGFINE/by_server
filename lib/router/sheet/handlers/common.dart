@@ -85,9 +85,8 @@ class SheetCommonWorkbookRouter extends RouterHelper {
     });
     var targetJson = MapUtil.map<String, Map<String, dynamic>>(
         workbook.columns, (e, i) => e.toJson);
-    workbook.updatedTime = DateTime.now().toString();
     var status = await sheetWorkbookDb.updateOne(where.eq('id', workbookId), {
-      '\$set': {'updatedTime': workbook.updatedTime, 'columns': targetJson}
+      '\$set': {'columns': targetJson}
     });
     if (status.isFailure) {
       return response(500, message: '更新失败');
@@ -108,9 +107,8 @@ class SheetCommonWorkbookRouter extends RouterHelper {
     });
     var targetJson = MapUtil.map<String, Map<String, dynamic>>(
         workbook.rows, (e, i) => e.toJson);
-    workbook.updatedTime = DateTime.now().toString();
     var status = await sheetWorkbookDb.updateOne(where.eq('id', workbookId), {
-      '\$set': {'updatedTime': workbook.updatedTime, 'rows': targetJson}
+      '\$set': {'rows': targetJson}
     });
 
     if (status.isFailure) {
@@ -136,9 +134,8 @@ class SheetCommonWorkbookRouter extends RouterHelper {
     });
     var targetJson = MapUtil.map<String, Map<String, dynamic>>(
         workbook.data, (e, i) => e.toJson);
-    workbook.updatedTime = DateTime.now().toString();
     var status = await sheetWorkbookDb.updateOne(where.eq('id', workbookId), {
-      '\$set': {'updatedTime': workbook.updatedTime, 'data': targetJson}
+      '\$set': {'data': targetJson}
     });
     if (status.isFailure) {
       return response(500, message: '更新失败');

@@ -14,16 +14,24 @@ class MetaWorkbook {
     return {
       'sheetId': sheetId,
       'code': code,
-      'columns': columns.map((c) => c.toJson).toList(),
-      'entries': entries.map((e) => e.toJson).toList()
+      'entries': ListUtil.map(entries, (v, i) => v.toJson),
+      'columns': ListUtil.map(columns, (v, i) => v.toJson)
     };
   }
+
+  List<Map<String, dynamic>> get columnsJson =>
+      ListUtil.map(columns, (v, i) => v.toJson);
+
+  List<Map<String, dynamic>> get entriesJson =>
+      ListUtil.map(entries, (v, i) => v.toJson);
 
   MetaWorkbook.fromJson(Map<String, dynamic> json)
       : sheetId = json['sheetId'],
         code = json['code'],
-        columns = json['columns'].map((v) => MetaColumn.fromJson(v)).toList(),
-        entries = json['entries'].map((v) => MetaEntry.fromJson(v)).toList();
+        columns =
+            ListUtil.map(json['columns'], (v, i) => MetaColumn.fromJson(v)),
+        entries =
+            ListUtil.map(json['entries'], (v, i) => MetaEntry.fromJson(v));
 
   static String numberToCode(int n) {
     String toCode(int n) {
@@ -37,6 +45,25 @@ class MetaWorkbook {
     }
 
     return toCode(n + 26);
+  }
+
+  getEntryValues(Map<String, dynamic> json) {
+    Map<String, dynamic> target = {};
+    for (int i = 0; i < columns.length; i++) {
+      target[columns[i].code] = json[columns[i].code] ?? '';
+    }
+    return target;
+  }
+
+  updateEntryValues(String id, Map<String, dynamic> json) {
+    MetaEntry? entry;
+    for (int i = 0; i < entries.length; i++) {
+      if (entries[i].id == id) {
+        entries[i].values = {...entries[i].values, ...json};
+        entry = entries[i];
+      }
+    }
+    return entry;
   }
 }
 
@@ -60,29 +87,17 @@ extension ParseMetaType on MetaType {
   }
 }
 
-enum MetaUnit { none, b, k, m, t }
-
-extension ParseMetaUnit on MetaUnit {
-  String toTypeString() {
-    return toString().split('.').last;
-  }
-
-  MetaUnit? stringToType(String type) {
-    return ListUtil.find(MetaUnit.values, (v, i) => v.toTypeString() == type);
-  }
-}
-
 class MetaNumber {
-  MetaUnit unit;
+  String unit;
   int decimal;
-  MetaNumber({this.unit = MetaUnit.none, this.decimal = 3});
+  MetaNumber({this.unit = '', this.decimal = 3});
   MetaNumber.fromJson(Map<String, dynamic> json)
-      : decimal = json['decimal'],
-        unit = MetaUnit.values[0].stringToType(json['unit']) ?? MetaUnit.none;
+      : decimal = json['decimal'] ?? 3,
+        unit = json['unit'] ?? '';
 
   Map<String, dynamic> get toJson {
     Map<String, dynamic> map = {
-      'unit': unit.toTypeString(),
+      'unit': unit,
       'decimal': decimal,
     };
     return map;
@@ -117,8 +132,8 @@ class MetaOptionsItem {
   String value;
   MetaOptionsItem({this.color = '', this.value = ''});
   MetaOptionsItem.fromJson(Map<String, dynamic> json)
-      : color = json['color'],
-        value = json['value'];
+      : color = json['color'] ?? '',
+        value = json['value'] ?? '';
 
   Map<String, dynamic> get toJson {
     Map<String, dynamic> map = {'value': value, 'color': color};
@@ -130,50 +145,77 @@ class MetaOptions {
   List<MetaOptionsItem> items = [];
   MetaOptions();
   MetaOptions.fromJson(Map<String, dynamic> json)
-      : items = json['items'].map((v) => MetaOptionsItem.fromJson(v)).toList();
+      : items =
+            ListUtil.map(json['items'], (v, i) => MetaOptionsItem.fromJson(v));
 
   Map<String, dynamic> get toJson {
-    return {'items': items.map((e) => e.toJson).toList()};
+    return {'items': ListUtil.map(items, (v, i) => v - toJson)};
   }
 }
 
 // ignore_for_file: non_constant_identifier_names
 class Meta {
-  MetaNumber Number = MetaNumber();
-  MetaDate Date = MetaDate();
-  MetaQrCode QrCode = MetaQrCode();
-  MetaOptions Options = MetaOptions();
+  MetaNumber number = MetaNumber();
+  MetaDate date = MetaDate();
+  MetaQrCode qrCode = MetaQrCode();
+  MetaOptions options = MetaOptions();
   Meta();
   Meta.fromJson(Map<String, dynamic> json)
-      : Number = MetaNumber.fromJson(json['Number']),
-        Date = MetaDate.fromJson(json['Date']),
-        QrCode = MetaQrCode.fromJson(json['QrCode']),
-        Options = MetaOptions.fromJson(json['Options']);
+      : number = MetaNumber.fromJson(json['number']),
+        date = MetaDate.fromJson(json['date']),
+        qrCode = MetaQrCode.fromJson(json['qrCode']),
+        options = MetaOptions.fromJson(json['options']);
 
   get toJson {
     return {
-      'Number': Number.toJson,
-      'Date': Date.toJson,
-      'QrCode': QrCode.toJson,
-      'Options': Options.toJson,
+      'number': number.toJson,
+      'date': date.toJson,
+      'qrCode': qrCode.toJson,
+      'options': options.toJson,
     };
+  }
+
+  updateMeta(Map<String, dynamic> json) {
+    if (json['number'] != null) {
+      if (json['number']['unit'] != null) {
+        number.unit = json['number']['unit'];
+      }
+      if (json['number']['decimal'] != null &&
+          json['number']['decimal'] is int) {
+        number.unit = json['number']['unit'];
+      }
+    }
+    if (json['date'] != null) {
+      if (json['date']['format'] != null) {
+        date.format = json['date']['format'];
+      }
+    }
+    if (json['qrCode'] != null) {
+      if (json['qrCode']['size'] != null && json['qrCode']['size'] is int) {
+        qrCode.size = json['qrCode']['size'];
+      }
+    }
+    if (json['options'] != null) {
+      if (json['options']['items'] != null &&
+          json['options']['items'] is List<Map<String, dynamic>>) {
+        options.items = ListUtil.map(
+            json['options']['items'], (v, i) => MetaOptionsItem.fromJson(v));
+      }
+    }
   }
 }
 
 class MetaColumn {
-  String id;
   String code;
   String title;
   int width;
   String formula;
   MetaType type = MetaType.Text;
   Meta meta = Meta();
-  MetaColumn(this.id,
-      {this.code = '', this.title = '', this.formula = '', this.width = 180});
+  MetaColumn(this.code, {this.title = '', this.formula = '', this.width = 180});
 
   MetaColumn.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        code = json['code'],
+      : code = json['code'],
         type = MetaType.Text.stringToType(json['type']) ?? MetaType.Text,
         width = json['width'],
         title = json['title'],
@@ -182,7 +224,6 @@ class MetaColumn {
 
   Map<String, dynamic> get toJson {
     Map<String, dynamic> map = {
-      'id': id,
       'code': code,
       'title': title,
       'type': type.toTypeString(),
@@ -197,29 +238,13 @@ class MetaColumn {
 class MetaEntry {
   String id;
   Map<String, dynamic> values = {};
-  MetaEntry({this.id = ''});
+  MetaEntry(this.id);
 
   get toJson {
-    return {'id': id, 'record': values};
+    return {'id': id, 'values': values};
   }
 
   MetaEntry.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         values = json['values'];
-
-  initValues(List<MetaColumn> columns) {
-    Map<String, dynamic> target = {};
-    for (int i = 0; i < columns.length; i++) {
-      target[columns[i].id] = values[columns[i].id] ?? '';
-    }
-    values = target;
-  }
-
-  updateValues(Map<String, dynamic> json) {
-    json.forEach((key, value) {
-      if (values[key] != null) {
-        values[key] = value;
-      }
-    });
-  }
 }

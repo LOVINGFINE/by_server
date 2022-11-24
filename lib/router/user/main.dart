@@ -1,2 +1,2 @@
-export './handlers/register.dart';
-export './handlers/user.dart';
+export 'handlers/register.dart';
+export 'handlers/user.dart';

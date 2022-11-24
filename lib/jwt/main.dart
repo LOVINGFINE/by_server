@@ -30,7 +30,7 @@ class JwtGateway {
       return await handler(
           request.change(headers: {'user': jsonEncode(user.toJson())}));
     }
-    return Response(400, body: jsonEncode({'message': 'not found user'}));
+    return Response(401, body: jsonEncode({'message': 'token is not found'}));
   }
 
   static exchange(Request request) async {

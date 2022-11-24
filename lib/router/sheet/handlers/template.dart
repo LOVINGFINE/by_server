@@ -31,12 +31,13 @@ class SheetTemplateRouter extends RouterUserHelper {
       }
       return response(400, message: 'template [$templateId] not found');
     }
+    int hotLimit = int.parse(query['page'] ?? '3');
     var categoryData =
         await categoryDb.find(where.excludeFields(['_id'])).toList();
     SelectorBuilder selector =
         where.match('title', query['search'] ?? '').excludeFields(['_id']);
     var templateData = await templateDb.find(selector).toList();
-    var hot = ListUtil.filter(templateData, (e, i) => i < 4);
+    var hot = ListUtil.filter(templateData, (e, i) => i < hotLimit);
     List<Map<String, dynamic>> data = ListUtil.map(categoryData, (ele, i) {
       var records = ListUtil.filter(templateData, (item, i) {
         return item['categoryId'] == ele['id'] && i > 3;

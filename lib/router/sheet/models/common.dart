@@ -4,8 +4,6 @@ import 'package:by_server/utils/md5.dart';
 class Workbook {
   String id = Md5EnCode('workbook-${DateTime.now()}').to16Bit;
   String name;
-  String createdTime = DateTime.now().toString();
-  String updatedTime = DateTime.now().toString();
   Map<String, Cell> data = {};
   Map<String, ConfigColumn> columns = {};
   Map<String, ConfigRow> rows = {};
@@ -13,8 +11,6 @@ class Workbook {
   Workbook.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         name = json['name'],
-        createdTime = json['createdTime'],
-        updatedTime = json['updatedTime'],
         columns = MapUtil.map<String, ConfigColumn>(
             json['columns'], (e, i) => ConfigColumn.fromJson(e)),
         rows = MapUtil.map<String, ConfigRow>(
@@ -25,8 +21,6 @@ class Workbook {
     return {
       'id': id,
       'name': name,
-      'createdTime': createdTime,
-      'updatedTime': updatedTime,
       'columns': MapUtil.map<String, Map<String, dynamic>>(
           columns, (e, i) => e.toJson),
       'rows':
