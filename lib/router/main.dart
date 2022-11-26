@@ -49,9 +49,20 @@ class HttpRouter {
       return SheetMetaWorkbookRouter(request, sheetId).handler();
     });
 
-    appRouter.all('/sheets/<sheetId>/meta/<command>',
-        (Request request, String sheetId, String command) {
-      return SheetMetaWorkbookRouter(request, sheetId, command: command)
+    appRouter.all('/sheets/<sheetId>/meta/<workbookId>',
+        (Request request, String sheetId, String workbookId) {
+      return SheetMetaWorkbookRouter(request, sheetId, workbookId: workbookId)
+          .handler();
+    });
+
+    appRouter.all('/sheets/<sheetId>/meta/<workbookId>/<command>', (
+      Request request,
+      String sheetId,
+      String workbookId,
+      String command,
+    ) {
+      return SheetMetaWorkbookRouter(request, sheetId,
+              workbookId: workbookId, command: command)
           .handler();
     });
 

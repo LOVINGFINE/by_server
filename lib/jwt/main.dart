@@ -11,6 +11,7 @@ class JwtGateway {
   static String signInPath = 'sign-in';
   static String signUpPath = 'sign-up';
   static String exchangePath = 'token';
+  static String refreshTokenPath = 'token-refresh';
 
   static Future<Response> verify(Handler handler, Request request) async {
     String token = request.headers['Access-Token'] ?? '';
@@ -81,6 +82,24 @@ class JwtGateway {
         }));
   }
 
+  static Future<Response> refreshToken(Request request) async {
+    String token = request.headers['Access-Token'] ?? '';
+    Authentication? auth = Authentication.fromAccessToken(token);
+    if (auth == null) {
+      return Response(400,
+          body: jsonEncode({'code': 403, 'message': '验证信息错误'}));
+    }
+    String newToken = Authentication(auth.userId).toAccessToken;
+    User? user = await UserRouter(request).getUserById(auth.userId);
+    if (user == null) {
+      return Response(400,
+          body: jsonEncode({'code': 403, 'message': '验证信息错误'}));
+    }
+
+    return Response(200,
+        body: jsonEncode({'code': 200, 'message': 'ok', 'data': newToken}));
+  }
+
   static Middleware get handler {
     return (Handler handler) {
       return (Request request) async {
@@ -101,6 +120,11 @@ class JwtGateway {
         if (path == exchangePath && method == 'GET') {
           // 换取用户信息
           return await accessToken(request);
+        }
+
+        if (path == refreshTokenPath && method == 'GET') {
+          // 刷新token
+          return await refreshToken(request);
         }
 
         if (whitelist.contains(path)) {

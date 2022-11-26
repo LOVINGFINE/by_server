@@ -7,7 +7,7 @@ import 'package:mongo_dart/mongo_dart.dart' hide State;
 import '../model.dart';
 
 class UserRouter extends RouterHelper {
-  DbCollection userDb = mongodb.collection('DB_USERS');
+  DbCollection userDb = mongodb.collection('users');
   UserRouter(Request request) : super(request);
 
   getUserById(String id) async {

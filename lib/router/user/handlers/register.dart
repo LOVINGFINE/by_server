@@ -7,7 +7,7 @@ import 'package:mongo_dart/mongo_dart.dart' hide State;
 import '../model.dart';
 
 class UserRegisterRouter extends RouterHelper {
-  DbCollection userDb = mongodb.collection('DB_USERS');
+  DbCollection userDb = mongodb.collection('users');
   UserRegisterRouter(Request request) : super(request);
 
   Future<Response> toMobile() async {

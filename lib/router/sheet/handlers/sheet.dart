@@ -11,25 +11,26 @@ class SheetRouter extends RouterUserHelper {
   SheetRouter(Request request, {this.sheetId}) : super(request);
 
   Future<Sheet?> createSheet(String name, {SheetType? type}) async {
-    Sheet sheet =
+    Sheet newSheet =
         Sheet(name: name, owner: user.id, type: type ?? SheetType.common);
-    var status = await sheetDb.insertOne(sheet.toJson);
+    var status = await sheetDb.insertOne(newSheet.toJson);
     if (!status.isFailure) {
       if (type == SheetType.meta) {
         // meta
-        DbCollection metaWorkbookDb = mongodb.collection('meta_workbooks');
+        DbCollection metaWorkbookDb =
+            mongodb.collection('meta_workbooks_${newSheet.id}');
         int count = await metaWorkbookDb.count();
-        MetaWorkbook metaWb = MetaWorkbook(
-            sheetId: sheet.id, code: MetaWorkbook.numberToCode(count));
+        MetaWorkbook metaWb =
+            MetaWorkbook(code: MetaWorkbook.numberToCode(count));
         await metaWorkbookDb.insertOne(metaWb.toJson);
       } else {
         // 创建 工作表
-        DbCollection newSheetWorkbookDb =
-            mongodb.collection('sheet_workbooks_${sheet.id}');
-        Workbook wb = Workbook(name: 'Sheet1');
-        await newSheetWorkbookDb.insertOne(wb.toJson);
+        DbCollection commonWorkbookDb =
+            mongodb.collection('common_workbooks_${newSheet.id}');
+        CommonWorkbook wb = CommonWorkbook(name: 'Sheet1');
+        await commonWorkbookDb.insertOne(wb.toJson);
       }
-      return sheet;
+      return newSheet;
     }
     return Future(() => null);
   }
@@ -138,11 +139,11 @@ class SheetRouter extends RouterUserHelper {
       return response(500, message: '删除失败');
     }
     if (sheet?.type == SheetType.meta) {
-      DbCollection metaWorkbookDb = mongodb.collection('meta_workbooks');
-      await metaWorkbookDb.deleteOne(where.eq('sheetId', sheetId));
+      DbCollection sheetWorkbookDb = mongodb.collection('_workbooks_$sheetId');
+      await sheetWorkbookDb.drop();
     } else {
       DbCollection sheetWorkbookDb =
-          mongodb.collection('sheet_workbooks_$sheetId');
+          mongodb.collection('common_workbooks_$sheetId');
       await sheetWorkbookDb.drop();
     }
     return response(200, message: 'ok');

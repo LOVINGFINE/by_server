@@ -5,7 +5,7 @@ import 'package:by_server/helper/router_helper.dart';
 import '../models/main.dart';
 
 class SheetUserSettingsRouter extends RouterUserHelper {
-  DbCollection settingsDb = mongodb.collection('user_sheet_settings');
+  DbCollection settingsDb = mongodb.collection('users_sheets_setting');
   SheetUserSettingsRouter(Request request) : super(request);
 
   Future<UserSheetSettings> findUserSettings() async {
@@ -32,6 +32,7 @@ class SheetUserSettingsRouter extends RouterUserHelper {
     var sort = body.json['sort'];
     var filter = body.json['filter'];
     var mode = body.json['mode'];
+    var defaultTitle = body.json['defaultTitle'];
 
     if (hideTemplate != null && hideTemplate is bool) {
       settings.hideTemplate = hideTemplate;
@@ -44,6 +45,10 @@ class SheetUserSettingsRouter extends RouterUserHelper {
     }
     if (mode != null) {
       settings.mode = settings.mode.toType(mode) ?? settings.mode;
+    }
+
+    if (defaultTitle != null) {
+      settings.defaultTitle = defaultTitle;
     }
 
     await settingsDb.updateOne(

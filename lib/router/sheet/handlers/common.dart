@@ -9,7 +9,7 @@ class SheetCommonWorkbookRouter extends RouterHelper {
   String sheetId;
   String workbookId;
   Sheet sheet = Sheet();
-  Workbook workbook = Workbook();
+  CommonWorkbook workbook = CommonWorkbook();
   DbCollection sheetDb = mongodb.collection('sheets');
   String command;
   SheetCommonWorkbookRouter(Request request, this.sheetId,
@@ -17,7 +17,7 @@ class SheetCommonWorkbookRouter extends RouterHelper {
       : super(request);
 
   DbCollection get sheetWorkbookDb {
-    return mongodb.collection('sheet_workbooks_$sheetId');
+    return mongodb.collection('common_workbooks_$sheetId');
   }
 
   @override
@@ -34,7 +34,7 @@ class SheetCommonWorkbookRouter extends RouterHelper {
         return response(400, message: 'workbook [$workbookId] not found');
       }
     } else {
-      workbook = Workbook.fromJson(jsonWb);
+      workbook = CommonWorkbook.fromJson(jsonWb);
     }
     return handle();
   }
@@ -53,7 +53,8 @@ class SheetCommonWorkbookRouter extends RouterHelper {
     if (workbookId == '') {
       SelectorBuilder selector = where
           .match('name', query['search'] ?? '')
-          .excludeFields(['_id', 'columns', 'rows', 'data']);
+          .excludeFields(
+              ['_id', 'columns', 'rows', 'data', 'createdTime', 'updatedTime']);
       var workbooks = await sheetWorkbookDb.find(selector).toList();
       return response(200, message: 'ok', data: workbooks);
     }
@@ -64,7 +65,7 @@ class SheetCommonWorkbookRouter extends RouterHelper {
   Future<Response> post() async {
     int count = await sheetWorkbookDb.count();
     String name = body.json['name'] ?? 'Sheet${count + 1}';
-    Workbook target = Workbook(name: name);
+    CommonWorkbook target = CommonWorkbook(name: name);
     var status = await sheetWorkbookDb.insertOne(target.toJson);
     if (status.isFailure) {
       return response(500, message: '创建 workbook 失败');
@@ -175,11 +176,14 @@ class SheetCommonWorkbookRouter extends RouterHelper {
 
   @override
   Future<Response> delete() async {
-    var status = await sheetWorkbookDb.deleteOne(where.eq('id', sheetId));
-    if (status.isFailure) {
-      return response(500, message: '删除失败');
+    var count = await sheetWorkbookDb.count();
+    if (count > 1) {
+      var status = await sheetWorkbookDb.deleteOne(where.eq('id', workbookId));
+      if (!status.isFailure) {
+        await updateSheet();
+        return response(200, message: 'ok');
+      }
     }
-    await updateSheet();
-    return response(200, message: 'ok');
+    return response(500, message: '删除失败');
   }
 }

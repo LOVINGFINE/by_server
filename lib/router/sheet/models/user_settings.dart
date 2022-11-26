@@ -76,6 +76,7 @@ extension ParseListFilter on ListFilter {
 class UserSheetSettings {
   String userId;
   bool hideTemplate = false;
+  String defaultTitle = '未命名标题';
   ListMode mode = ListMode.list;
   ListSort sort = ListSort.openDate;
   ListFilter filter = ListFilter.none;
@@ -85,6 +86,7 @@ class UserSheetSettings {
   UserSheetSettings.fromJson(Map<String, dynamic> json)
       : userId = json['userId'],
         hideTemplate = json['hideTemplate'],
+        defaultTitle = json['defaultTitle'],
         mode = ListMode.values[0].toType(json['mode']) ?? ListMode.values[0],
         filter =
             ListFilter.values[0].toType(json['filter']) ?? ListFilter.values[0],
@@ -99,7 +101,8 @@ class UserSheetSettings {
       'hideTemplate': hideTemplate,
       'mode': mode.toTypeString(),
       'sort': sort.toTypeString(),
-      'filter': filter.toTypeString()
+      'filter': filter.toTypeString(),
+      'defaultTitle': defaultTitle
     };
   }
 }

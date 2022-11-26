@@ -1,33 +1,48 @@
 import 'package:by_server/utils/lodash.dart';
+import 'package:by_server/utils/md5.dart';
 
 class MetaWorkbook {
-  String sheetId;
+  String id = Md5EnCode('meta-workbook-${DateTime.now()}').to16Bit;
   String code;
+  String name;
+  String createdTime = DateTime.now().toString();
+  String updatedTime = DateTime.now().toString();
   List<MetaColumn> columns = [];
   List<MetaEntry> entries = [];
-  MetaWorkbook({
-    this.sheetId = '',
-    this.code = '',
-  });
+  bool showRowCount = true;
+  MetaWorkbook({this.code = '', this.name = 'Sheet1'});
 
   Map<String, dynamic> get toJson {
     return {
-      'sheetId': sheetId,
+      'id': id,
+      'createdTime': createdTime,
+      'updatedTime': updatedTime,
+      'name': name,
       'code': code,
+      'showRowCount': showRowCount,
       'entries': ListUtil.map(entries, (v, i) => v.toJson),
       'columns': ListUtil.map(columns, (v, i) => v.toJson)
     };
   }
 
-  List<Map<String, dynamic>> get columnsJson =>
-      ListUtil.map(columns, (v, i) => v.toJson);
-
-  List<Map<String, dynamic>> get entriesJson =>
-      ListUtil.map(entries, (v, i) => v.toJson);
+  Map<String, dynamic> get toDataJson {
+    return {
+      'id': id,
+      'createdTime': createdTime,
+      'updatedTime': updatedTime,
+      'code': code,
+      'name': name,
+      'showRowCount': showRowCount,
+    };
+  }
 
   MetaWorkbook.fromJson(Map<String, dynamic> json)
-      : sheetId = json['sheetId'],
+      : id = json['id'],
         code = json['code'],
+        name = json['name'],
+        showRowCount = json['showRowCount'] ?? true,
+        createdTime = json['createdTime'],
+        updatedTime = json['updatedTime'],
         columns =
             ListUtil.map(json['columns'], (v, i) => MetaColumn.fromJson(v)),
         entries =
