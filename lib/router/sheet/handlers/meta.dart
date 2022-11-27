@@ -170,13 +170,18 @@ class SheetMetaWorkbookRouter extends RouterHelper {
 
   Future<Response> patchAbout() async {
     var showRowCount = body.json['showRowCount'];
+    var name = body.json['name'];
     if (showRowCount != null && showRowCount is bool) {
-      var status = await metaWorkbookDb.updateOne(where.eq('id', workbookId), {
-        '\$set': {'showRowCount': workbook.showRowCount}
-      });
-      if (status.isFailure) {
-        return response(500, message: 'update $sheetId error');
-      }
+      workbook.showRowCount = showRowCount;
+    }
+    if (name != null && name is String) {
+      workbook.name = name;
+    }
+    workbook.updatedTime = DateTime.now().toString();
+    var status = await metaWorkbookDb
+        .updateOne(where.eq('id', workbookId), {'\$set': workbook.toDataJson});
+    if (status.isFailure) {
+      return response(500, message: 'update $sheetId error');
     }
     await updateSheet();
     return response(200, message: 'ok', data: workbook.toDataJson);
