@@ -135,12 +135,9 @@ class SheetMetaWorkbookRouter extends RouterHelper {
         }
       }
     }
-    var status = await metaWorkbookDb.updateOne(where.eq('id', workbookId), {
+    await metaWorkbookDb.updateOne(where.eq('id', workbookId), {
       '\$set': {'columns': ListUtil.map(workbook.columns, (e, i) => e.toJson)}
     });
-    if (status.isFailure) {
-      return response(500, message: 'update $sheetId entries error');
-    }
     await updateSheet();
     return response(200,
         message: 'ok', data: ListUtil.map(data, (e, i) => e.toJson));
@@ -157,12 +154,9 @@ class SheetMetaWorkbookRouter extends RouterHelper {
         }
       });
     }
-    var status = await metaWorkbookDb.updateOne(where.eq('id', workbookId), {
+    await metaWorkbookDb.updateOne(where.eq('id', workbookId), {
       '\$set': {'entries': ListUtil.map(workbook.entries, (e, i) => e.toJson)}
     });
-    if (status.isFailure) {
-      return response(500, message: 'update $sheetId entries error');
-    }
     await updateSheet();
     return response(200,
         message: 'ok', data: ListUtil.map(data, (e, i) => e.toJson));

@@ -7,7 +7,12 @@ import 'package:by_server/router/user/model.dart';
 import 'package:by_server/router/user/main.dart';
 
 class JwtGateway {
-  static List<String> whitelist = [];
+  static List<String> whitelist = [
+    'sign-in/access',
+    'sign-up/captcha',
+    'sign-up/access',
+    'sign-up/verify'
+  ];
   static String signInPath = 'sign-in';
   static String signUpPath = 'sign-up';
   static String exchangePath = 'token';
@@ -26,10 +31,10 @@ class JwtGateway {
     if (!auth.endTime.isAfter(DateTime.now())) {
       return Response(403, body: jsonEncode({'message': 'token is Expired'}));
     }
-    User? user = await UserRouter(request).getUserById(auth.userId);
+    User? user = await UserLoginRouter(request).getUserById(auth.userId);
     if (user != null) {
       return await handler(
-          request.change(headers: {'user': jsonEncode(user.toJson())}));
+          request.change(headers: {'user': jsonEncode(user.toDb)}));
     }
     return Response(401, body: jsonEncode({'message': 'token is not found'}));
   }
@@ -39,13 +44,13 @@ class JwtGateway {
     Authentication? auth = Authentication.fromAccessToken(token);
     if (auth != null) {
       if (auth.endTime.isAfter(DateTime.now())) {
-        return await UserRouter(request).getUserById(auth.userId);
+        return await UserLoginRouter(request).getUserById(auth.userId);
       }
     }
   }
 
   static Future<Response> userRouter(Request request) async {
-    Response userRes = await UserRouter(request).handler();
+    Response userRes = await UserLoginRouter(request).handler();
     if (userRes.statusCode == 200) {
       var res = jsonDecode(await userRes.readAsString());
       String token = Authentication(res['data']['id']).toAccessToken;
@@ -75,11 +80,7 @@ class JwtGateway {
           body: jsonEncode({'code': 403, 'message': '验证信息错误'}));
     }
     return Response(200,
-        body: jsonEncode({
-          'code': 200,
-          'message': 'ok',
-          'data': user.toJson(hide: ['password'])
-        }));
+        body: jsonEncode({'code': 200, 'message': 'ok', 'data': user.toJson}));
   }
 
   static Future<Response> refreshToken(Request request) async {
@@ -90,7 +91,7 @@ class JwtGateway {
           body: jsonEncode({'code': 403, 'message': '验证信息错误'}));
     }
     String newToken = Authentication(auth.userId).toAccessToken;
-    User? user = await UserRouter(request).getUserById(auth.userId);
+    User? user = await UserLoginRouter(request).getUserById(auth.userId);
     if (user == null) {
       return Response(400,
           body: jsonEncode({'code': 403, 'message': '验证信息错误'}));
@@ -126,8 +127,7 @@ class JwtGateway {
           // 刷新token
           return await refreshToken(request);
         }
-
-        if (whitelist.contains(path)) {
+        if (whitelist.contains(path) || path.contains('static/')) {
           // websocket 或 白名单
           return await handler(request);
         }

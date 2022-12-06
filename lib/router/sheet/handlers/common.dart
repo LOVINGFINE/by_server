@@ -127,7 +127,7 @@ class SheetCommonWorkbookRouter extends RouterHelper {
           workbook.data[key]?.value = item['value'];
         }
         if (item['style'] != null) {
-          workbook.data[key]?.style = item['style'];
+          workbook.data[key]?.updateStyle(item['style']);
         }
       } else {
         workbook.data[key] = Cell.fromJson(item);
@@ -135,12 +135,9 @@ class SheetCommonWorkbookRouter extends RouterHelper {
     });
     var targetJson = MapUtil.map<String, Map<String, dynamic>>(
         workbook.data, (e, i) => e.toJson);
-    var status = await sheetWorkbookDb.updateOne(where.eq('id', workbookId), {
+    await sheetWorkbookDb.updateOne(where.eq('id', workbookId), {
       '\$set': {'data': targetJson}
     });
-    if (status.isFailure) {
-      return response(500, message: '更新失败');
-    }
     await updateSheet();
     return response(200, message: 'ok', data: targetJson);
   }

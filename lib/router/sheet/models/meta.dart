@@ -164,7 +164,7 @@ class MetaOptions {
             ListUtil.map(json['items'], (v, i) => MetaOptionsItem.fromJson(v));
 
   Map<String, dynamic> get toJson {
-    return {'items': ListUtil.map(items, (v, i) => v - toJson)};
+    return {'items': ListUtil.map(items, (v, i) => v.toJson)};
   }
 }
 
@@ -212,7 +212,7 @@ class Meta {
     }
     if (json['options'] != null) {
       if (json['options']['items'] != null &&
-          json['options']['items'] is List<Map<String, dynamic>>) {
+          json['options']['items'] is List<dynamic>) {
         options.items = ListUtil.map(
             json['options']['items'], (v, i) => MetaOptionsItem.fromJson(v));
       }

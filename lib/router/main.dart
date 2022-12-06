@@ -1,10 +1,30 @@
+import 'package:by_server/router/file/handler.dart';
+import 'package:by_server/router/file/model.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'sheet/main.dart';
+import 'user/main.dart';
 
 class HttpRouter {
   static Handler get router {
     Router appRouter = Router();
+
+    /// 用户
+    appRouter.all('/sign-in/<type>', (Request request, String type) {
+      return UserLoginRouter(request, type: type).handler();
+    });
+
+    appRouter.all('/sign-up/<type>', (Request request, String type) {
+      return UserRegisterRouter(request, type: type).handler();
+    });
+
+    appRouter.all('/user/<type>', (Request request, String type) {
+      return UserRouter(request, type: type).handler();
+    });
+
+    appRouter.all('/user/file/upload', (Request request) {
+      return CloudFileRouter(request).handler();
+    });
 
     /// 模版分类
     appRouter.all('/sheet/template-categories', (Request request) {

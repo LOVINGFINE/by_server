@@ -1,19 +1,9 @@
-import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:by_server/router/user/model.dart';
-
-class BodyResult {
-  /// The parsed json.
-  dynamic json = {};
-
-  /// All files uploaded within this request.
-  List<File> files = [];
-
-  /// You must set [storeOriginalBuffer] to `true` to see this.
-  List<int> originalBuffer = [];
-}
+import 'body_parser_helper.dart';
 
 class RouterHelper {
   Request request;
@@ -26,31 +16,45 @@ class RouterHelper {
     return request.url.queryParameters;
   }
 
-  Future<dynamic> getBodyJson() async {
+  Future setBodyJson() async {
     // 获取body
     try {
       String bodyString = await request.readAsString();
-      var map = jsonDecode(bodyString);
-      if (map != null) {
-        return map;
-      }
-      return {};
+      body.json = jsonDecode(bodyString);
     } catch (e) {
-      return {};
+      print(e.toString());
+    }
+  }
+
+  Future<dynamic> setBodyFiles(MediaType contentType) async {
+    // 获取body
+    try {
+      if (request.isMultipartForm) {
+        // Read all form-data parameters into a single map:
+        final parameters = <String, String>{
+          await for (final formData in request.multipartFormData)
+            formData.name: await formData.part.readString(),
+        };
+        print(parameters);
+      }
+    } catch (e) {
+      print(e.toString());
     }
   }
 
   Future bodyParse() async {
     try {
-      // Stream<List<int>> stream = request.read();
       MediaType contentType =
           MediaType.parse(request.headers['content-type'].toString());
-      if (contentType.mimeType == 'application/json') {
-        var json = await getBodyJson();
-        body.json = json;
+      if (contentType.type == 'multipart') {
+        if (contentType.subtype == 'form-data') {
+          setBodyFiles(contentType);
+        }
+      } else {
+        setBodyJson();
       }
-    } catch (_) {
-      body.json = {};
+    } catch (e) {
+      print(e.toString());
     }
   }
 
@@ -59,7 +63,7 @@ class RouterHelper {
   }
 
   Future<Response> handler() async {
-    await bodyParse();
+    body = await BodyParserHelper(request).getBodyResult();
     handle() async {
       switch (request.method.toUpperCase()) {
         case 'GET':

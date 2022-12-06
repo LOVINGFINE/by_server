@@ -1,4 +1,4 @@
-import 'package:by_server/utils/rsa.dart';
+import 'dart:math';
 
 class ConfigColumn {
   int width;
@@ -15,5 +15,5 @@ class ConfigColumn {
 void main() async {
   var json = ['ssss'];
 
-  print(json.map((e) => ConfigColumn()).toList() is List<ConfigColumn>);
+  print(DateTime.now().subtract(Duration(days: 50)));
 }

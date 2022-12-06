@@ -114,6 +114,11 @@ class Cell {
         style = json['style'] ?? Cell.finalStyle,
         comments = ListUtil.map<Comment>(
             json['comments'] ?? [], (v, i) => Comment.fromJson(v));
+
+  updateStyle(Map<String, dynamic> json) {
+    style = {...style, ...json};
+  }
+
   get toJson {
     return {
       'value': value,

@@ -1,4 +1,6 @@
 class Verify {
+  // 用户名
+  static RegExp usernameRegExp = RegExp(r'^[A-Za-z0-9-_&!=+|]{8,32}$');
   // 手机号
   static RegExp mobileRegExp = RegExp(
       r'^((13[0-9])|(14[0-9])|(15[0-9])|(16[0-9])|(17[0-9])|(18[0-9])|(19[0-9]))\d{8}$');
@@ -17,5 +19,9 @@ class Verify {
 
   get email {
     return Verify.emailRegExp.hasMatch('$text');
+  }
+
+  get username {
+    return Verify.usernameRegExp.hasMatch('$text');
   }
 }
