@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:shelf/shelf.dart';
 import 'package:by_server/utils/md5.dart';
 import 'package:by_server/helper/router_helper.dart';
@@ -11,11 +12,12 @@ class UserLoginRouter extends RouterHelper {
   String type;
   UserLoginRouter(Request request, {this.type = ''}) : super(request);
 
-  getUserById(String id) async {
+  FutureOr<User?> getUserById(String id) async {
     Map<String, dynamic>? res = await userDb.findOne(where.eq('id', id));
     if (res != null) {
       return User.fromJson(res);
     }
+    return null;
   }
 
   Future<Response> toAccess() async {
@@ -55,6 +57,7 @@ class UserLoginRouter extends RouterHelper {
       return response(400, message: '密码错误');
     }
     User user = User.fromJson(userJson);
+    await UserActiveHistory.insert(request, user.id, ActiveType.signIn);
     return response(200, message: 'ok', data: user.toJson);
   }
 

@@ -13,7 +13,21 @@ class ConfigColumn {
 }
 
 void main() async {
-  var json = ['ssss'];
+  var list = [
+    {'date': '2022-12-07 03:28:34.318117', 'k': 'a'},
+    {'date': '2022-12-14 01:15:30.661324', 'k': 'b'},
+    {'date': '', 'k': 'b'}
+  ];
 
-  print(DateTime.now().subtract(Duration(days: 50)));
+  list.sort((a, b) {
+    try {
+      return DateTime.parse(a['date'] ?? '')
+              .isAfter(DateTime.parse(b['date'] ?? ''))
+          ? 0
+          : 1;
+    } catch (e) {
+      return 0;
+    }
+  });
+  print(list);
 }

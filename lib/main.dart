@@ -24,7 +24,6 @@ class AppServer {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Max-Age': '3600',
   };
-
   run() async {
     // server
     try {
@@ -32,18 +31,12 @@ class AppServer {
     } catch (e) {
       print(e.toString());
     }
-    var staticHandler = createStaticHandler('$rootDirectory/lib/public');
+
     var pipeline = const Pipeline()
         .addMiddleware(logRequests())
         .addMiddleware(corsHeaders(headers: overrideHeaders))
-        .addMiddleware(JwtGateway.handler)
-        .addHandler((Request request) {
-      var path = request.url.path;
-      if (path.contains('static/')) {
-        return staticHandler(request);
-      }
-      return HttpRouter.router(request);
-    });
+        .addMiddleware(JwtGateway.jwtHandlerMiddleware)
+        .addHandler(HttpRouter.router);
     await shelf_io.serve(pipeline, iPv4, port);
     print('[${EasyDate().format(EasyDate.time)}] http://${iPv4.host}:$port');
   }

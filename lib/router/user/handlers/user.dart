@@ -14,6 +14,9 @@ class UserRouter extends RouterUserHelper {
   String type;
   UserRouter(Request request, {this.type = ''}) : super(request);
 
+  DbCollection get activeHistoryDb =>
+      mongodb.collection('users_active_history_${user.id}');
+
   Future<Response> updateUsername() async {
     String username = body.json['username'] ?? '';
     if (username.isEmpty) {
@@ -192,6 +195,22 @@ class UserRouter extends RouterUserHelper {
     return response(200, message: 'ok');
   }
 
+  Future<Response> getActiveHistory() async {
+    var list =
+        await activeHistoryDb.find(where.excludeFields(['_id'])).toList();
+    list.sort((a, b) {
+      try {
+        return DateTime.parse(a['date'] ?? '')
+                .isAfter(DateTime.parse(b['date'] ?? ''))
+            ? 0
+            : 1;
+      } catch (e) {
+        return 0;
+      }
+    });
+    return response(200, message: 'ok', data: list);
+  }
+
   @override
   Future<Response> get() async {
     switch (type) {
@@ -199,6 +218,27 @@ class UserRouter extends RouterUserHelper {
         return sendEmailCode();
       case 'password-with-code':
         return sendPasswordEmailCode();
+      case 'active-history':
+        return getActiveHistory();
+      default:
+        return response(400, message: 'params error');
+    }
+  }
+
+  Future<Response> removeActiveHistory() async {
+    String id = query['id'] ?? '';
+    await activeHistoryDb.deleteOne(where.eq('id', id));
+    return response(
+      200,
+      message: 'ok',
+    );
+  }
+
+  @override
+  Future<Response> delete() async {
+    switch (type) {
+      case 'active-history':
+        return removeActiveHistory();
       default:
         return response(400, message: 'params error');
     }

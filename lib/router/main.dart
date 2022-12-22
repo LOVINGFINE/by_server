@@ -1,5 +1,4 @@
 import 'package:by_server/router/file/handler.dart';
-import 'package:by_server/router/file/model.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'sheet/main.dart';
@@ -10,8 +9,17 @@ class HttpRouter {
     Router appRouter = Router();
 
     /// 用户
+    appRouter.all('/sign-in', (
+      Request request,
+    ) {
+      return UserLoginRouter(request).handler();
+    });
     appRouter.all('/sign-in/<type>', (Request request, String type) {
       return UserLoginRouter(request, type: type).handler();
+    });
+
+    appRouter.all('/sign-up', (Request request) {
+      return UserRegisterRouter(request).handler();
     });
 
     appRouter.all('/sign-up/<type>', (Request request, String type) {
@@ -65,10 +73,12 @@ class HttpRouter {
       return SheetRouter(request, sheetId: sheetId).handler();
     });
 
-    appRouter.all('/sheets/<sheetId>/meta', (Request request, String sheetId) {
-      return SheetMetaWorkbookRouter(request, sheetId).handler();
+    appRouter.all('/sheets/<sheetId>/workbooks',
+        (Request request, String sheetId) {
+      return SheetWorkbooksRouter(request, sheetId).handler();
     });
 
+    // meta table
     appRouter.all('/sheets/<sheetId>/meta/<workbookId>',
         (Request request, String sheetId, String workbookId) {
       return SheetMetaWorkbookRouter(request, sheetId, workbookId: workbookId)
@@ -86,14 +96,7 @@ class HttpRouter {
           .handler();
     });
 
-    appRouter.all('/sheets/<sheetId>/common',
-        (Request request, String sheetId) {
-      return SheetCommonWorkbookRouter(
-        request,
-        sheetId,
-      ).handler();
-    });
-
+    // common table
     appRouter.all('/sheets/<sheetId>/common/<workbookId>',
         (Request request, String sheetId, String workbookId) {
       return SheetCommonWorkbookRouter(request, sheetId, workbookId: workbookId)

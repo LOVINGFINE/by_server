@@ -169,21 +169,21 @@ class BodyParserHelper {
   Future<BodyResult> getBodyResult() async {
     var body = BodyResult();
     try {
-      MediaType contentType =
-          MediaType.parse(request.headers['content-type'].toString());
+      MediaType contentType = MediaType.parse(
+          request.headers['content-type'] ?? 'application/json');
       if (contentType.mimeType == 'application/json') {
         String bodyString = await request.readAsString();
         body.json = jsonDecode(bodyString);
       }
+    } catch (e) {
+      body.json = {};
+    }
+    try {
       if (request.isMultipartForm) {
-        // Read all form-data parameters into a single map:
-        // await for (var ele in request.multipartFormData) {
-        //   body.files[ele.name] = ele;
-        // }
         body.files = request.multipartFormData;
       }
     } catch (e) {
-      print(e.toString());
+      body.files = Stream.empty();
     }
     return body;
   }

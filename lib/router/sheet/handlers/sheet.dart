@@ -3,6 +3,7 @@ import 'package:mongo_dart/mongo_dart.dart' hide State;
 import 'package:shelf/shelf.dart';
 import 'package:by_server/helper/router_helper.dart';
 import '../models/main.dart';
+import 'workbook.dart';
 
 class SheetRouter extends RouterUserHelper {
   Sheet? sheet;
@@ -10,26 +11,13 @@ class SheetRouter extends RouterUserHelper {
   DbCollection sheetDb = mongodb.collection('sheets');
   SheetRouter(Request request, {this.sheetId}) : super(request);
 
-  Future<Sheet?> createSheet(String name, {SheetType? type}) async {
-    Sheet newSheet =
-        Sheet(name: name, owner: user.id, type: type ?? SheetType.common);
+  DbCollection get sheetWorkbookDb => mongodb.collection('workbooks_$sheetId');
+  Future<Sheet?> createSheet(String name) async {
+    Sheet newSheet = Sheet(name: name, owner: user.id);
     var status = await sheetDb.insertOne(newSheet.toJson);
     if (!status.isFailure) {
-      if (type == SheetType.meta) {
-        // meta
-        DbCollection metaWorkbookDb =
-            mongodb.collection('meta_workbooks_${newSheet.id}');
-        int count = await metaWorkbookDb.count();
-        MetaWorkbook metaWb =
-            MetaWorkbook(code: MetaWorkbook.numberToCode(count));
-        await metaWorkbookDb.insertOne(metaWb.toJson);
-      } else {
-        // 创建 工作表
-        DbCollection commonWorkbookDb =
-            mongodb.collection('common_workbooks_${newSheet.id}');
-        CommonWorkbook wb = CommonWorkbook(name: 'Sheet1');
-        await commonWorkbookDb.insertOne(wb.toJson);
-      }
+      // 创建 工作表
+      await SheetWorkbooksRouter(request, newSheet.id).insertWorkbook();
       return newSheet;
     }
     return Future(() => null);
@@ -100,8 +88,7 @@ class SheetRouter extends RouterUserHelper {
   @override
   Future<Response> post() async {
     String name = body.json['name'] ?? '未命名';
-    SheetType? type = SheetType.values[0].toType(body.json['type'] ?? '');
-    Sheet? sheet = await createSheet(name, type: type);
+    Sheet? sheet = await createSheet(name);
     if (sheet == null) {
       return response(500, message: '创建失败');
     }
@@ -138,14 +125,7 @@ class SheetRouter extends RouterUserHelper {
     if (status.isFailure) {
       return response(500, message: '删除失败');
     }
-    if (sheet?.type == SheetType.meta) {
-      DbCollection sheetWorkbookDb = mongodb.collection('_workbooks_$sheetId');
-      await sheetWorkbookDb.drop();
-    } else {
-      DbCollection sheetWorkbookDb =
-          mongodb.collection('common_workbooks_$sheetId');
-      await sheetWorkbookDb.drop();
-    }
+    await sheetWorkbookDb.drop();
     return response(200, message: 'ok');
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:shelf/shelf.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:by_server/router/user/model.dart';
 import 'body_parser_helper.dart';
 
@@ -14,48 +13,6 @@ class RouterHelper {
 
   Map<String, String> get query {
     return request.url.queryParameters;
-  }
-
-  Future setBodyJson() async {
-    // 获取body
-    try {
-      String bodyString = await request.readAsString();
-      body.json = jsonDecode(bodyString);
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
-  Future<dynamic> setBodyFiles(MediaType contentType) async {
-    // 获取body
-    try {
-      if (request.isMultipartForm) {
-        // Read all form-data parameters into a single map:
-        final parameters = <String, String>{
-          await for (final formData in request.multipartFormData)
-            formData.name: await formData.part.readString(),
-        };
-        print(parameters);
-      }
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
-  Future bodyParse() async {
-    try {
-      MediaType contentType =
-          MediaType.parse(request.headers['content-type'].toString());
-      if (contentType.type == 'multipart') {
-        if (contentType.subtype == 'form-data') {
-          setBodyFiles(contentType);
-        }
-      } else {
-        setBodyJson();
-      }
-    } catch (e) {
-      print(e.toString());
-    }
   }
 
   Future<Response> before(Future<Response> Function() handle) async {

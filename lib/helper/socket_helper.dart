@@ -11,7 +11,6 @@ class SocketMessage {
         content = json['content'];
 }
 
-
 class SocketHelper {
   Request request;
   static Map<String, WebSocketChannel> sockets = {};
@@ -24,7 +23,7 @@ class SocketHelper {
   }
 
   register(WebSocketChannel value) {
-    var key = request.url.queryParameters['id'];
+    var key = query['id'];
     if (key != null) {
       sockets[key] = value;
       value.stream.listen((event) {
